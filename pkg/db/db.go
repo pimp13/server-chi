@@ -16,7 +16,7 @@ func NewMySQLStorage(cfg *mysql.Config) (*sql.DB, error) {
 	return db, nil
 }
 
-func DBPing(db *sql.DB) {
+func CheckPing(db *sql.DB) {
 	if err := db.Ping(); err != nil {
 		log.Fatalf("Error of ping db: %s", err)
 		return

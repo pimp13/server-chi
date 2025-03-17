@@ -23,7 +23,7 @@ func main() {
 		log.Fatal("Error of connection db:", err)
 	}
 	defer db.Close()
-	database.DBPing(db)
+	database.CheckPing(db)
 
 	server := api.NewServer(config.Envs.ServerPort, db)
 	if err := server.Start(); err != nil {
