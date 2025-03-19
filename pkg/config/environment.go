@@ -21,6 +21,7 @@ type Config struct {
 	DBName                string
 	JWTExpirationInSecond int64
 	JWTKey                string
+	Salt                  string
 }
 
 func initConfig() *Config {
@@ -38,6 +39,7 @@ func initConfig() *Config {
 		DBName:                getEnv("DB_NAME", "db_name"),
 		JWTExpirationInSecond: getEnvAsInt("JWT_EXPIRATION_IN_SECOND", 3600*24*7),
 		JWTKey:                getEnv("JWT_KEY", "not-secret-key-create-secret-key"),
+		Salt:                  getEnv("SALT", "salt-test-021"),
 	}
 }
 

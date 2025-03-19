@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 	"github.com/pimp13/server-chi/internal/models"
 	"github.com/pimp13/server-chi/internal/services"
 	"github.com/pimp13/server-chi/pkg/types"
@@ -45,9 +44,6 @@ func (h *UserHandler) register(w http.ResponseWriter, r *http.Request) {
 	// validation data
 
 	// check user exists and registered
-
-	// hash user password
-	user.Password = fmt.Sprintf("%s-salt-test-021", user.Password)
 
 	// create user
 	err := h.userService.Create(ctx, &models.User{
