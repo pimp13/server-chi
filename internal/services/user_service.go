@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"github.com/pimp13/server-chi/internal/models"
 	"github.com/pimp13/server-chi/internal/repositories"
 )
 
@@ -15,6 +16,6 @@ func NewUserService(repo *repositories.UserRepository) *UserService {
 	}
 }
 
-func (service *UserService) Create(ctx context.Context) {
-
+func (service *UserService) Create(ctx context.Context, user *models.User) error {
+	return service.repo.CreateNewUser(ctx, user)
 }

@@ -2,6 +2,9 @@ package api
 
 import (
 	"database/sql"
+	"github.com/pimp13/server-chi/internal/handlers/user"
+	"github.com/pimp13/server-chi/internal/repositories"
+	"github.com/pimp13/server-chi/internal/services"
 	"log"
 	"net/http"
 	"time"
@@ -9,7 +12,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/pimp13/server-chi/internal/handlers"
-	"github.com/pimp13/server-chi/internal/handlers/user"
 )
 
 type Server struct {
@@ -43,11 +45,15 @@ func (s *Server) Start() error {
 
 func (s *Server) initRoutes(router *chi.Mux) {
 	// Routes
-	handlers := handlers.NewHandler()
+	up := handlers.NewHandler()
 
-	userHandlers := user.NewHandler()
+	// Register Services
+	userRepo := repositories.NewUserRepository(s.db)
+	userService := services.NewUserService(userRepo)
+	userHandlers := user.NewUserHandler(userService)
+
 	router.Route("/api", func(r chi.Router) {
-		handlers.Routes(r)
+		up.Routes(r)
 		userHandlers.Routes(r)
 	})
 }

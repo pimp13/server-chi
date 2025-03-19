@@ -39,9 +39,14 @@ func (repo *UserRepository) GetUserByEmail(ctx context.Context, email string) (*
 
 	return &user, nil
 }
-func (repo *UserRepository) GetUserByID(id uint) (*models.User, error) {
+func (repo *UserRepository) GetUserByID(ctx context.Context, id uint) (*models.User, error) {
 	panic("t")
 }
-func (repo *UserRepository) CreateNewUser(user *models.User) error {
-	panic("t")
+func (repo *UserRepository) CreateNewUser(ctx context.Context, user *models.User) error {
+	query := `
+		INSERT INTO users (name, email, password) 
+		VALUES (?, ?, ?)
+ 	`
+	_, err := repo.db.ExecContext(ctx, query, user.Name, user.Email, user.Password)
+	return err
 }
