@@ -7,7 +7,7 @@ import (
 
 	"github.com/pimp13/server-chi/internal/models"
 	"github.com/pimp13/server-chi/internal/services"
-	"github.com/pimp13/server-chi/pkg/types"
+	"github.com/pimp13/server-chi/pkg/interfaces"
 	"github.com/pimp13/server-chi/pkg/util"
 
 	"github.com/go-chi/chi/v5"
@@ -32,18 +32,18 @@ func (h *UserHandler) Routes(r chi.Router) {
 
 /* Handlers */
 func (h *UserHandler) getUser(w http.ResponseWriter, r *http.Request) {
-	util.WriteJSON(w, http.StatusOK, "hello world this is go server")
+	_ = util.WriteJSON(w, http.StatusOK, "hello world this is go server")
 }
 
 func (h *UserHandler) testCors(w http.ResponseWriter, r *http.Request) {
-	util.WriteJSON(w, http.StatusOK, map[string]string{"message": "Sending POST request form next for go cors"})
+	_ = util.WriteJSON(w, http.StatusOK, map[string]string{"message": "Sending POST request form next for go cors"})
 }
 
 func (h *UserHandler) register(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
 	// get user data and parse to json
-	var request types.UserRegisterRequest
+	var request interfaces.UserRegisterRequest
 	if err := util.ParseJSON(r, &request); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return

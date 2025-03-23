@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/pimp13/server-chi/internal/models"
-	"github.com/pimp13/server-chi/pkg/types"
+	"github.com/pimp13/server-chi/pkg/interfaces"
 )
 
 type UserRepository struct {
@@ -20,7 +20,11 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-var _ types.UserRepositoryInterface = (*UserRepository)(nil)
+var _ interfaces.IUserRepository = (*UserRepository)(nil)
+
+func (repo *UserRepository) FindByID(ctx context.Context, id uint) (*models.User, error) {
+	panic("find user by email")
+}
 
 func (repo *UserRepository) FindByEmail(ctx context.Context, email string) (*models.User, error) {
 	var user models.User
@@ -39,9 +43,7 @@ func (repo *UserRepository) FindByEmail(ctx context.Context, email string) (*mod
 
 	return &user, nil
 }
-func (repo *UserRepository) FindByID(ctx context.Context, id uint) (*models.User, error) {
-	panic("find user by email")
-}
+
 func (repo *UserRepository) Create(ctx context.Context, user *models.User) error {
 	query := `
 		INSERT INTO users (name, email, password) 
