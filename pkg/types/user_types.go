@@ -6,12 +6,13 @@ import (
 )
 
 type UserRepositoryInterface interface {
-	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
-	GetUserByID(ctx context.Context, id uint) (*models.User, error)
-	CreateNewUser(ctx context.Context, user *models.User) error
+	FindByEmail(ctx context.Context, email string) (*models.User, error)
+	FindByID(ctx context.Context, id uint) (*models.User, error)
+	Create(ctx context.Context, user *models.User) error
+	UserExistsByEmail(ctx context.Context, email string) (bool, error)
 }
 
-type RegisterUserData struct {
+type UserRegisterRequest struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`

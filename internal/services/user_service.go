@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 
 	"github.com/pimp13/server-chi/internal/models"
 	"github.com/pimp13/server-chi/internal/repositories"
@@ -18,11 +19,24 @@ func NewUserService(repo *repositories.UserRepository) *UserService {
 	}
 }
 
-func (service *UserService) Create(ctx context.Context, user *models.User) error {
+func (s *UserService) RegisterUser(ctx context.Context, user *models.User) error {
+	// check user exists and registered
+	exists, err := s.repo.UserExistsByEmail(ctx, user.Email)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return errors.New("user with this email already exists")
+	}
+
+	// validation data
+
+	// hash password
 	hash, err := util.HashPassword(user.Password)
 	if err != nil {
 		return err
 	}
 	user.Password = hash
-	return service.repo.CreateNewUser(ctx, user)
+
+	return s.repo.Create(ctx, user)
 }

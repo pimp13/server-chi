@@ -22,7 +22,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 
 var _ types.UserRepositoryInterface = (*UserRepository)(nil)
 
-func (repo *UserRepository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+func (repo *UserRepository) FindByEmail(ctx context.Context, email string) (*models.User, error) {
 	var user models.User
 	query := `
 			SELECT id, name, email, password, created_at
@@ -39,14 +39,24 @@ func (repo *UserRepository) GetUserByEmail(ctx context.Context, email string) (*
 
 	return &user, nil
 }
-func (repo *UserRepository) GetUserByID(ctx context.Context, id uint) (*models.User, error) {
-	panic("t")
+func (repo *UserRepository) FindByID(ctx context.Context, id uint) (*models.User, error) {
+	panic("find user by email")
 }
-func (repo *UserRepository) CreateNewUser(ctx context.Context, user *models.User) error {
+func (repo *UserRepository) Create(ctx context.Context, user *models.User) error {
 	query := `
 		INSERT INTO users (name, email, password) 
 		VALUES (?, ?, ?)
  	`
 	_, err := repo.db.ExecContext(ctx, query, user.Name, user.Email, user.Password)
 	return err
+}
+
+func (repo *UserRepository) UserExistsByEmail(ctx context.Context, email string) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM users WHERE email = ?)`
+	err := repo.db.QueryRowContext(ctx, query, email).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
 }

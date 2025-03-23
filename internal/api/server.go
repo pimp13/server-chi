@@ -2,15 +2,17 @@ package api
 
 import (
 	"database/sql"
-	"github.com/pimp13/server-chi/internal/handlers/user"
-	"github.com/pimp13/server-chi/internal/repositories"
-	"github.com/pimp13/server-chi/internal/services"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/pimp13/server-chi/internal/handlers/user"
+	"github.com/pimp13/server-chi/internal/repositories"
+	"github.com/pimp13/server-chi/internal/services"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/pimp13/server-chi/internal/handlers"
 )
 
@@ -30,11 +32,7 @@ func (s *Server) Start() error {
 	router := chi.NewRouter()
 
 	// Middlewares
-	router.Use(middleware.RealIP)
-	router.Use(middleware.RequestID)
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.Timeout(60 * time.Second))
+	s.middlewares(router)
 
 	// Routes
 	s.initRoutes(router)
@@ -56,4 +54,21 @@ func (s *Server) initRoutes(router *chi.Mux) {
 		up.Routes(r)
 		userHandlers.Routes(r)
 	})
+}
+
+func (s *Server) middlewares(r *chi.Mux) {
+	r.Use(middleware.RealIP)
+	r.Use(middleware.RequestID)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.Timeout(60 * time.Second))
+	// CORS middleware
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000", "http://127.0.0.1:3000"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
 }

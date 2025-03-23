@@ -33,12 +33,12 @@ func initConfig() *Config {
 		AppName:               getEnv("APP_NAME", "GO APP"),
 		PublicHost:            getEnv("PUBLIC_HOST", "http://localhost"),
 		ServerPort:            getEnv("SERVER_PORT", ":8080"),
-		DBUser:                getEnv("DB_USER", "root"),
-		DBPassword:            getEnv("DB_PASSWORD", "root"),
+		DBUser:                getEnv("DB_USER", "username"),
+		DBPassword:            getEnv("DB_PASSWORD", "password"),
 		DBAddress:             fmt.Sprintf("%s:%s", getEnv("DB_HOST", "127.0.0.1"), getEnv("DB_PORT", "3306")),
 		DBName:                getEnv("DB_NAME", "db_name"),
 		JWTExpirationInSecond: getEnvAsInt("JWT_EXPIRATION_IN_SECOND", 3600*24*7),
-		JWTKey:                getEnv("JWT_KEY", "not-secret-key-create-secret-key"),
+		JWTKey:                getEnv("JWT_KEY", "secret-key-create-secret-key"),
 		Salt:                  getEnv("SALT", "salt-test-021"),
 	}
 }
