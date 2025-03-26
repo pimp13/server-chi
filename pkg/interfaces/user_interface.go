@@ -10,4 +10,5 @@ type IUserRepository interface {
 	FindByID(ctx context.Context, id uint) (*models.User, error)
 	Create(ctx context.Context, user *models.User) error
 	UserExistsByEmail(ctx context.Context, email string) (bool, error)
+	GetLatestAll(ctx context.Context) ([]models.User, error)
 }

@@ -16,7 +16,10 @@ build:
 clean:
 	rm -rf $(BIN_DIR)
 
-run: build
+start:
+	./$(BIN_DIR)/$(BINARY_NAME)
+
+restart: build
 	./$(BIN_DIR)/$(BINARY_NAME)
 
 test:

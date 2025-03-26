@@ -1,7 +1,6 @@
 package util
 
 import (
-	// "github.com/pimp13/server-chi/pkg/config"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -14,7 +13,7 @@ func HashPassword(password string) (string, error) {
 	return string(bytes), nil
 }
 
-func CheckHashPassword(password, hash string) bool {
+func CheckHashPassword(hash, password string) bool {
 	// password += config.Envs.Salt
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil

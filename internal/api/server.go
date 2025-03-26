@@ -1,7 +1,9 @@
 package api
 
 import (
+	"context"
 	"database/sql"
+	"github.com/gorilla/csrf"
 	"log"
 	"net/http"
 	"time"
@@ -62,13 +64,39 @@ func (s *Server) middlewares(r *chi.Mux) {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
+
+	// check ajax middleware
+	r.Use(checkAjax)
 	// CORS middleware
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "http://127.0.0.1:3000"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-TOKEN", "X-XSRF-TOKEN"},
+		ExposedHeaders:   []string{"Link", "X-CSRF-TOKEN"},
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
+	// CSRF token middleware
+	csrfKey := []byte("32-byte-long-secret-key-5587996")
+	csrfMiddleware := csrf.Protect(
+		csrfKey,
+		csrf.Secure(false),
+		csrf.HttpOnly(true),
+		csrf.SameSite(csrf.SameSiteStrictMode),
+		csrf.CookieName("csrf_token"),
+		csrf.Path("/"),
+		csrf.MaxAge(86400),
+	)
+	r.Use(csrfMiddleware)
+
+}
+
+func checkAjax(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
+			ctx := context.WithValue(r.Context(), "isAjax", true)
+			r = r.WithContext(ctx)
+		}
+		next.ServeHTTP(w, r)
+	})
 }

@@ -33,7 +33,7 @@ func (repo *UserRepository) FindByEmail(ctx context.Context, email string) (*mod
 			FROM users
 			WHERE email = ?
 	`
-	err := repo.db.QueryRowContext(ctx, query, email).Scan(&user.ID, &user.Email, &user.Password, &user.CreatedAt)
+	err := repo.db.QueryRowContext(ctx, query, email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.New("user not found")
@@ -61,4 +61,33 @@ func (repo *UserRepository) UserExistsByEmail(ctx context.Context, email string)
 		return false, err
 	}
 	return exists, nil
+}
+
+func (repo *UserRepository) GetLatestAll(ctx context.Context) ([]models.User, error) {
+	query := `
+			SELECT id, name, email, created_at
+			FROM users
+			ORDER BY created_at DESC
+			LIMIT 10 OFFSET 0;
+	`
+	rows, err := repo.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []models.User
+	for rows.Next() {
+		var user models.User
+		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
