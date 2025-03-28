@@ -22,8 +22,22 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 
 var _ interfaces.IUserRepository = (*UserRepository)(nil)
 
-func (repo *UserRepository) FindByID(ctx context.Context, id uint) (*models.User, error) {
-	panic("find user by email")
+func (repo *UserRepository) FindByID(ctx context.Context, id int) (*models.User, error) {
+	var user models.User
+	query := `
+			SELECT id, name, email, created_at
+			FROM users
+			WHERE id = ?
+	`
+	err := repo.db.QueryRowContext(ctx, query, id).Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("user not found")
+		}
+		return nil, fmt.Errorf("error fetching user: %w", err)
+	}
+
+	return &user, nil
 }
 
 func (repo *UserRepository) FindByEmail(ctx context.Context, email string) (*models.User, error) {

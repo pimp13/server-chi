@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"database/sql"
 	"github.com/gorilla/csrf"
 	"log"
@@ -65,8 +64,6 @@ func (s *Server) middlewares(r *chi.Mux) {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	// check ajax middleware
-	r.Use(checkAjax)
 	// CORS middleware
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "http://127.0.0.1:3000"},
@@ -88,15 +85,4 @@ func (s *Server) middlewares(r *chi.Mux) {
 		csrf.MaxAge(86400),
 	)
 	r.Use(csrfMiddleware)
-
-}
-
-func checkAjax(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
-			ctx := context.WithValue(r.Context(), "isAjax", true)
-			r = r.WithContext(ctx)
-		}
-		next.ServeHTTP(w, r)
-	})
 }

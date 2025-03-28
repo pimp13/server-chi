@@ -65,3 +65,11 @@ func (s *UserService) LoginUser(ctx context.Context, request requests.UserLoginR
 
 	return token, nil
 }
+
+func (s *UserService) FindUser(ctx context.Context, id int) (*models.User, error) {
+	user, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}

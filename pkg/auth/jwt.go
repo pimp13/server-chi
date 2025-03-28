@@ -2,7 +2,8 @@ package auth
 
 import (
 	"errors"
-	"fmt"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -11,13 +12,22 @@ import (
 
 var jwtKey = []byte(config.Envs.JWTKey)
 
-func MakeToken(userID uint) (string, error) {
+type Claims struct {
+	UserID int `json:"user_id"`
+	jwt.RegisteredClaims
+}
+
+func MakeToken(userID int) (string, error) {
 	exp := time.Second * time.Duration(config.Envs.JWTExpirationInSecond)
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.MapClaims{
-		"ID":  userID,
-		"exp": time.Now().Add(exp).Unix(),
-	})
+	claims := &Claims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(exp)),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
@@ -27,17 +37,37 @@ func MakeToken(userID uint) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyToken(tokenString string) (*jwt.Token, error) {
-	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("invalid signing method")
-		}
+func VerifyToken(tokenString string) (*Claims, error) {
+	claims := &Claims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return jwtKey, nil
 	})
+	if err != nil {
+		return nil, err
+	}
+	if !token.Valid {
+		return nil, errors.New("invalid token")
+	}
+	return claims, nil
+}
 
-	if err != nil || !token.Valid {
-		return nil, fmt.Errorf("invalid token: %s", err.Error())
+func ExtractToken(r *http.Request) string {
+	bearerToken := r.Header.Get("Authorization")
+	if len(bearerToken) > 7 && strings.HasPrefix(bearerToken, "Bearer ") {
+		return bearerToken[7:]
 	}
 
-	return token, nil
+	jwtCookie, err := r.Cookie("jwt_token")
+	if err == nil {
+		return jwtCookie.Value
+	}
+
+	// if token exists to query parameter
+	token := r.URL.Query().Get("token")
+	if token != "" {
+		return token
+	}
+
+	return ""
 }

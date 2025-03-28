@@ -3,15 +3,15 @@ package user
 import (
 	"context"
 	"errors"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/pimp13/server-chi/internal/models"
 	"github.com/pimp13/server-chi/internal/services"
+	"github.com/pimp13/server-chi/pkg/middleware"
 	"github.com/pimp13/server-chi/pkg/requests"
 	"github.com/pimp13/server-chi/pkg/util"
 	"log"
 	"net/http"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type UserHandler struct {
@@ -29,7 +29,10 @@ func (h *UserHandler) Routes(r chi.Router) {
 	r.Post("/register", h.register)
 	r.Post("/login", h.login)
 
-	r.Post("/test-cors", h.testCors)
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.Auth)
+		r.Get("/check-login", h.checkUserLogin)
+	})
 }
 
 /* Handlers */
@@ -40,10 +43,6 @@ func (h *UserHandler) getAllUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_ = util.WriteJSON(w, http.StatusOK, users)
-}
-
-func (h *UserHandler) testCors(w http.ResponseWriter, r *http.Request) {
-	_ = util.WriteJSON(w, http.StatusOK, map[string]string{"message": "Sending POST request form next for go cors"})
 }
 
 func (h *UserHandler) register(w http.ResponseWriter, r *http.Request) {
@@ -118,4 +117,14 @@ func (h *UserHandler) login(w http.ResponseWriter, r *http.Request) {
 		"token":   token,
 		"message": "user is logged",
 	})
+}
+
+func (h *UserHandler) checkUserLogin(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value("userID").(int)
+	user, err := h.userService.FindUser(context.Background(), userID)
+	if err != nil {
+		_ = util.WriteError(w, http.StatusNotFound, err)
+		return
+	}
+	_ = util.WriteJSON(w, http.StatusOK, map[string]*models.User{"user": user})
 }
